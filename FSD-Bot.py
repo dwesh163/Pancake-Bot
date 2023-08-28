@@ -1,16 +1,17 @@
 from telegram.ext import Updater, CommandHandler
 import os
 from dotenv import load_dotenv
+from dictionary import messageDictionary
 
 load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
 
 def startFunction(update, context):
-    update.message.reply_text("Start")
+    update.message.reply_text(messageDictionary["start"])
 
 def helpFunction(update, context):
-    update.message.reply_text("help")
+    update.message.reply_text(messageDictionary["help"])
 
 def brainFunction(update, context):
     update.message.reply_text("brain")
