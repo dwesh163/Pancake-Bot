@@ -14,60 +14,105 @@ TOKEN = os.getenv('TOKEN')
 
 global geek
 geek = 0
+global path
+path = "data.json"
 
-def sendEmoji(user, text, update, context):
-
-    path = "data.json"
-    newUser = 1
-    number = randint(1,5)
-
-    if text == "brain" or text == "smart":
-        text1 = "brain"
-        text2 = "smart"
-        EmojiDictionary = brainEmojiDictionary
-
-    if text == "code" or text == "geek":
-        text1 = "code"
-        text2 = "geek"
-        EmojiDictionary = codeEmojiDictionary
-
-    if text == "geek" or text == "alien":
-        text1 = "geek"
-        text2 = "alien"
-        EmojiDictionary = alienEmojiDictionary
+# verify function
+def verifyAccount(user,update):
 
     username = user['username']
-    userID = user['id']
+    userID = user["id"]
     chat_id = update.message.chat_id
 
     with open(path, 'r') as jsonFile:
         data = json.load(jsonFile)
 
-    for i in range(len(data)):
-        if data[i]["id"] == userID:
-            if data[i]["chat_id"] == chat_id:
-                if data[i]["text"] == text1 or data[i]["text"] == text2:
-                    update.message.reply_text("Une seule commande par utilisateur est autorisée par jour")
-                    newUser = 0
+    dictionary = {
+        "channel_name": "undefined",
+        "users": {
+        }
+    }
+
+    if str(chat_id) not in data:
+        data[chat_id] = dictionary
+
+    if len(data) == 0:
+        data[chat_id] = dictionary
+
+    with open(path, 'w') as jsonFile:
+        json.dump(data, jsonFile, indent=3)
+
+    sleep(0.1)
+
+    with open(path, 'r') as jsonFile:
+        data = json.load(jsonFile)
+
+    dictionary = {
+        userID : [
+
+            ]
+    }
+
+    if str(userID) not in data[str(chat_id)]["users"]:
+        data[str(chat_id)]["users"][userID] = []
+
+    with open(path, 'w') as jsonFile:
+        json.dump(data, jsonFile, indent=3)
+
+#send function
+def sendEmoji(user, text, update, context):
+
+    verifyAccount(user,update)
+
+    newUser = 1
+    
+    if text == "brain" or text == "smart":
+        text1 = "brain"
+        text2 = "smart"
+        EmojiDictionary = brainEmojiDictionary
+        number = randint(1,len(brainEmojiDictionary))
+
+    if text == "code" or text == "geek":
+        text1 = "code"
+        text2 = "geek"
+        EmojiDictionary = codeEmojiDictionary
+        number = randint(1,len(codeEmojiDictionary))
+
+    if text == "ufo" or text == "alien":
+        text1 = "ufo"
+        text2 = "alien"
+        EmojiDictionary = alienEmojiDictionary
+        number = randint(1,len(alienEmojiDictionary))
+
+    username = user['username']
+    userID = user["id"]
+    chat_id = update.message.chat_id
+
+    with open(path, 'r') as jsonFile:
+        data = json.load(jsonFile)
+
+    for i in range(len(data[str(chat_id)]["users"][str(userID)])):
+        if data[str(chat_id)]["users"][str(userID)][i]["text"] == text1 or data[str(chat_id)]["users"][str(userID)][i]["text"] == text2:
+            update.message.reply_text("Une seule commande par utilisateur est autorisée par jour")
+            newUser = 0
 
     if newUser == 1:
-        print(f"new User : {username} ")
+        print(f"On group {chat_id} add a new User : {username}, ID : {userID}")
         dictionary = {
-            "chat_id": chat_id,
             "username": username,
-            "id": userID,
             "text": text,
             "number": number,
             "time": datetime.now().strftime("%H:%M:%S"),
-            "date": datetime.now().strftime("%m/%d/%y")
-        }
+            "date": datetime.now().strftime("%m/%d/%y"),
+            }
 
-        data.append(dictionary)
+        data[str(chat_id)]["users"][str(userID)].append(dictionary)
 
         with open(path, 'w') as jsonFile:
             json.dump(data, jsonFile, indent=3)
 
         update.message.reply_text(EmojiDictionary[number])
+        Isgeek = 0
 
 def startFunction(update, context):
     update.message.reply_text(messageDictionary["start"])
@@ -89,17 +134,11 @@ def codeFunction(update, context):
 
 def geekFunction(update, context):
     user = update.message.from_user
+    sendEmoji(user, "geek", update, context)
 
-    global geek
-
-    if geek != 1:
-        if randint(1,2) == 1:
-            sendEmoji(user, "code", update, context)
-        else:
-            sendEmoji(user, "alien", update, context)
-        geek = 1
-    else:
-        update.message.reply_text("Une seule commande par utilisateur est autorisée par jour")
+def ufoFunction(update, context):
+    user = update.message.from_user
+    sendEmoji(user, "ufo", update, context)
 
 def alienFunction(update, context):
     user = update.message.from_user
@@ -117,73 +156,85 @@ def beerFunction(update, context):
 def drinkSomethingFunction(update, context):
     update.message.reply_text("drink Something")
 
+def resumFunction(update, context):
+    updater = Updater(TOKEN, use_context=True)
+    bot = updater.bot
+    GetResum(bot)
+
+# Resum function
 def GetResum(bot):
-
-    chatIDList = []
-    userList = []
-    newUserList = []
-    newUserListNB = []
-
-    userNumber = ""
-    finalText = ""
-    n = 0
 
     with open("data.json", 'r') as jsonFile:
         data = json.load(jsonFile)
 
-    for chatID in range(len(data)):
+    for i in data:
+        info = []
+        finalText = "Il est 18 heures voici le classement: \n\n"
 
-        if data[chatID]["chat_id"] not in chatIDList:
-            chatIDList.append(data[chatID]["chat_id"])
+        brain = []
+        code = []
+        alien = []
 
-    for k in range(3):
-        if k == 0:
-            EmojiDictionary = brainEmojiDictionary
-            text1 = "brain"
-            text2 = "smart"
-        if k == 1:
-            EmojiDictionary = codeEmojiDictionary
-            text1 = "code"
-            text2 = "geek"
-        if k == 2:
-            EmojiDictionary = alienEmojiDictionary
-            text1 = "geek"
-            text2 = "alien"
-
-        for i in range(len(chatIDList)):
-
-            for j in range(len(data)):
-
-                if data[j]["chat_id"] == chatIDList[i]:
-                    if data[j]["text"] == text1 or data[j]["text"] == text2:
-                        userList.append(data[j]["username"])
-                        userNumber = f'{data[j]["number"]}-{data[j]["id"]}-{data[j]["username"]}'
-                        newUserList.append(userNumber)
-
-            newUserList.sort()
-            newUserList.reverse()
-            if userList != "":
-                finalText = "Il est 18 heures voici le classement: \n"
-                for l in newUserList:
-                    print(l)
-                    n += 1
-                    finalText = finalText+"    "
-                    finalText = f"{finalText}{n}. @{l.split('-')[2]} avec {l.split('-')[0]} {EmojiDictionary[1]}"
-
-                    newUserListNB.append(l.split("-")[0])
-
-                    finalText = f"{finalText}\n"
-            else:
-                print("presonne n'a participé")
-
-            bot.send_message(chat_id=chatIDList[i], text=finalText)
-
-            userList = []
-            newUserList = []
-            newUserListNB = []
+        def addResum(info):
             n = 0
+            finalText = ""
+
+            for l in info:
+                text = l.split("-")[2]
+                if text == "brain" or text == "smart":
+                    EmojiDictionary = brainEmojiDictionary
+
+                if text == "code" or text == "geek":
+                    EmojiDictionary = codeEmojiDictionary
+
+                if text == "ufo" or text == "alien":
+                    EmojiDictionary = alienEmojiDictionary
+
+                n += 1
+                finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {EmojiDictionary[1]}\n"
+
+            finalText += "\n"
+
+            return finalText
+
+        for j in data[str(i)]["users"]:
+            for k in range(len(data[str(i)]["users"][str(j)])):
+                info.append(f'{data[str(i)]["users"][str(j)][k]["number"]}-{j}-{data[str(i)]["users"][str(j)][k]["text"]}-{data[str(i)]["users"][str(j)][k]["username"]}')
+
+        info.sort()
+        info.reverse()
+
+        for m in info:
+            text = m.split("-")[2]
+            if text == "brain" or text == "smart":
+                brain.append(m)
+                EmojiDictionary = brainEmojiDictionary
+
+            if text == "code" or text == "geek":
+                EmojiDictionary = codeEmojiDictionary
+                code.append(m)
+
+            if text == "ufo" or text == "alien":
+                EmojiDictionary = alienEmojiDictionary
+                alien.append(m)
+
+        finalText += addResum(brain)
+        finalText += addResum(code)
+        finalText += addResum(alien)
+
+        bot.send_message(chat_id=i, text=finalText)
+
+        with open("data.json", 'r') as jsonFile:
+            data = json.load(jsonFile)
+
+        data = {}
+
+        with open(path, 'w') as jsonFile:
+            json.dump(data, jsonFile, indent=3)  
 
 def main():
+
+    print("script started")
 
     updater = Updater(TOKEN, use_context=True)
 
@@ -198,11 +249,13 @@ def main():
     dp.add_handler(CommandHandler("brain", brainFunction))
     dp.add_handler(CommandHandler("smart", smartFunction))
 
+    dp.add_handler(CommandHandler("resum", resumFunction))
+
     dp.add_handler(CommandHandler("code", codeFunction))
     dp.add_handler(CommandHandler("geek", geekFunction))
 
     dp.add_handler(CommandHandler("alien", alienFunction))
-    dp.add_handler(CommandHandler("geek", geekFunction))
+    dp.add_handler(CommandHandler("ufo", ufoFunction))
 
     dp.add_handler(CommandHandler("drink", drinkFunction))
     dp.add_handler(CommandHandler("coffee", coffeeFunction))
@@ -218,7 +271,7 @@ def main():
     while True:
         time = datetime.now().time()
 
-        if time.hour == 10 and time.minute == 58 and isSend != 1:
+        if time.hour == 18 and time.minute == 0 and isSend != 1:
             GetResum(bot)
             isSend = 1
         else:
