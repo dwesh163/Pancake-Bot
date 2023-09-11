@@ -1,11 +1,10 @@
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 import os
 from dotenv import load_dotenv
 from dictionary import messageDictionary, brainEmojiDictionary, codeEmojiDictionary, alienEmojiDictionary
 from random import *
 import json
 from datetime import datetime
-import schedule
 from time import *
 
 load_dotenv()
@@ -224,14 +223,16 @@ def GetResum(bot):
 
         bot.send_message(chat_id=i, text=finalText)
 
-        with open("data.json", 'r') as jsonFile:
-            data = json.load(jsonFile)
+    with open("data.json", 'r') as jsonFile:
+        data = json.load(jsonFile)
 
-        data = {}
+    data = {}
 
-        with open(path, 'w') as jsonFile:
-            json.dump(data, jsonFile, indent=3)  
+    with open(path, 'w') as jsonFile:
+        json.dump(data, jsonFile, indent=3)  
 
+
+ 
 def main():
 
     print("script started")
@@ -276,6 +277,10 @@ def main():
             isSend = 1
         else:
             sleep(10)
+
+        if time.hour == 18 and time.minute == 4:
+            isSend = 0
+
 
     # Stop bot with CTRL+C
     updater.idle()
