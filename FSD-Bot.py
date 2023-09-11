@@ -16,6 +16,10 @@ geek = 0
 global path
 path = "data.json"
 
+if not os.path.exists(path):
+    with open(path, 'w') as f:
+        json.dump({}, f)
+
 # verify function
 def verifyAccount(user,update):
 
