@@ -1,0 +1,7 @@
+services:
+  fsdbot:
+    build: .
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - TOKEN=${PANCAKE_BOT_TOKEN}
