@@ -1,7 +1,7 @@
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 import os
 from dotenv import load_dotenv
-from dictionary import messageDictionary, brainEmojiDictionary, codeEmojiDictionary, alienEmojiDictionary
+from dictionary import messageDictionary, brainEmojiDictionary, codeEmojiDictionary, alienEmojiDictionary, drinkDictionary
 from random import *
 import json
 from datetime import datetime
@@ -9,7 +9,7 @@ from time import *
 
 load_dotenv()
 
-TOKEN = os.getenv('TOKEN')
+TOKEN = os.getenv('TOKEN') 
 
 global geek
 geek = 0
@@ -103,6 +103,7 @@ def sendEmoji(user, text, update, context):
         print(f"On group {chat_id} add a new User : {username}, ID : {userID}")
         dictionary = {
             "username": username,
+            "drink" : 0,
             "text": text,
             "number": number,
             "time": datetime.now().strftime("%H:%M:%S"),
@@ -116,6 +117,56 @@ def sendEmoji(user, text, update, context):
 
         update.message.reply_text(EmojiDictionary[number])
         Isgeek = 0
+
+def drinkFunction(user, text, update, context):
+
+    verifyAccount(user,update)
+
+    newUser = 1
+
+    username = user['username']
+    userID = user["id"]
+    chat_id = update.message.chat_id
+
+    with open(path, 'r') as jsonFile:
+        data = json.load(jsonFile)
+
+    for i in range(len(data[str(chat_id)]["users"][str(userID)])):
+        if data[str(chat_id)]["users"][str(userID)][i]["drink"] == 1:
+            newUser = 2
+            
+            if text in data[str(chat_id)]["users"][str(userID)][i]["drinkList"]:
+                nb = data[str(chat_id)]["users"][str(userID)][i]["drinkList"][text]
+                nb += 1
+                data[str(chat_id)]["users"][str(userID)][i]["drinkList"][text] = nb
+            else:
+                data[str(chat_id)]["users"][str(userID)][i]["drinkList"][text] = 1
+
+            break
+
+        else:
+            newUser = 0
+            
+
+    if newUser == 1:
+        print(f"On group {chat_id} add a new User : {username}, ID : {userID}")
+        dictionary = {
+            "username": username,
+            "text":"",
+            "drink": 1,
+            "time": datetime.now().strftime("%H:%M:%S"),
+            "date": datetime.now().strftime("%m/%d/%y"),
+            "drinkList": {
+                text: 1
+            }
+            }
+
+        data[str(chat_id)]["users"][str(userID)].append(dictionary)
+        
+    with open(path, 'w') as jsonFile:
+        json.dump(data, jsonFile, indent=3)
+
+    update.message.reply_text(drinkDictionary[randint(1,len(drinkDictionary))])
 
 def startFunction(update, context):
     update.message.reply_text(messageDictionary["start"])
@@ -147,17 +198,18 @@ def alienFunction(update, context):
     user = update.message.from_user
     sendEmoji(user, "alien", update, context)
 
-def drinkFunction(update, context):
-    update.message.reply_text("drink")
-
 def coffeeFunction(update, context):
-    update.message.reply_text("coffee")
+    user = update.message.from_user
+    drinkFunction(user, "coffee", update, context)
 
 def beerFunction(update, context):
-    update.message.reply_text("beer")
+    user = update.message.from_user
+    drinkFunction(user, "beer", update, context)
 
 def drinkSomethingFunction(update, context):
-    update.message.reply_text("drink Something")
+    user = update.message.from_user
+    drinkFunction(user, "other", update, context)
+
 
 def resumFunction(update, context):
     updater = Updater(TOKEN, use_context=True)
@@ -199,7 +251,7 @@ def GetResum(bot):
             finalText += "\n"
 
             return finalText
-
+        
         for j in data[str(i)]["users"]:
             for k in range(len(data[str(i)]["users"][str(j)])):
                 info.append(f'{data[str(i)]["users"][str(j)][k]["number"]}-{j}-{data[str(i)]["users"][str(j)][k]["text"]}-{data[str(i)]["users"][str(j)][k]["username"]}')
@@ -235,8 +287,6 @@ def GetResum(bot):
     with open(path, 'w') as jsonFile:
         json.dump(data, jsonFile, indent=3)  
 
-
- 
 def main():
 
     print("script started")
@@ -262,10 +312,9 @@ def main():
     dp.add_handler(CommandHandler("alien", alienFunction))
     dp.add_handler(CommandHandler("ufo", ufoFunction))
 
-    dp.add_handler(CommandHandler("drink", drinkFunction))
     dp.add_handler(CommandHandler("coffee", coffeeFunction))
     dp.add_handler(CommandHandler("beer", beerFunction))
-    dp.add_handler(CommandHandler("drink_something", drinkSomethingFunction))
+    dp.add_handler(CommandHandler("drink", drinkSomethingFunction))
 
     dp.add_handler(CommandHandler("getresume", GetResum))
 
@@ -276,13 +325,13 @@ def main():
     while True:
         time = datetime.now().time()
 
-        if time.hour == 18 and time.minute == 0 and isSend != 1:
+        if time.hour == 18 and time.minute == 00 and isSend != 1:
             GetResum(bot)
             isSend = 1
         else:
             sleep(10)
 
-        if time.hour == 18 and time.minute == 4:
+        if time.hour == 18 and time.minute == 2:
             isSend = 0
 
 
