@@ -27,3 +27,8 @@ messageDictionary = {
     "help" : "List of commands /brain or /smart: The bot responds with a random number of brain emojis 🧠.\n/code or /geek: The bot responds with a random number of computer emojis 💻.\n/alien or /ufo : The bot responds with a random number of alien emojis 👾. \n/drink or /coffee or /beer or /drink something : The bot responds with messages to simulate the consumption of drinks.\n/start : This command briefly explains the bot's functionalities.\n /help : This command provides a summary explanation of the bot's functionalities."
 }
 
+drinkDictionary = {
+    1 : "Quel gourmand",
+    2 : "tu devais avoir soif", 
+    3 : "Quel bon buveur"
+}
