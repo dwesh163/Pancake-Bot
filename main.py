@@ -9,7 +9,7 @@ from time import *
 
 load_dotenv()
 
-TOKEN = os.getenv('TOKEN') 
+TOKEN = os.getenv('TOKEN')
 
 global geek
 geek = 0
@@ -251,7 +251,7 @@ def GetResum(bot):
             finalText += "\n"
 
             return finalText
-        
+
         for j in data[str(i)]["users"]:
             for k in range(len(data[str(i)]["users"][str(j)])):
                 info.append(f'{data[str(i)]["users"][str(j)][k]["number"]}-{j}-{data[str(i)]["users"][str(j)][k]["text"]}-{data[str(i)]["users"][str(j)][k]["username"]}')
@@ -291,6 +291,9 @@ def main():
 
     print("script started")
 
+    HEURE = os.getenv('HEURE')
+    MINUTE = os.getenv('MINUTE')
+
     updater = Updater(TOKEN, use_context=True)
 
     dp = updater.dispatcher
@@ -325,13 +328,13 @@ def main():
     while True:
         time = datetime.now().time()
 
-        if time.hour == 18 and time.minute == 00 and isSend != 1:
+        if time.hour == HEURE and time.minute == MINUTE and isSend != 1:
             GetResum(bot)
             isSend = 1
         else:
-            sleep(10)
+            sleep(29)
 
-        if time.hour == 18 and time.minute == 2:
+        if time.hour == HEURE and time.minute == MINUTE + 2:
             isSend = 0
 
 
