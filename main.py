@@ -1,7 +1,7 @@
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 import os
 from dotenv import load_dotenv
-from dictionary import messageDictionary, brainEmojiDictionary, codeEmojiDictionary, alienEmojiDictionary, drinkDictionary
+from dictionary import messageDictionary, brainEmojiDictionary, codeEmojiDictionary, alienEmojiDictionary, drinkDictionary, drinkEmojiDictionary
 from random import *
 import json
 from datetime import datetime
@@ -142,11 +142,9 @@ def drinkFunction(user, text, update, context):
             else:
                 data[str(chat_id)]["users"][str(userID)][i]["drinkList"][text] = 1
 
-            break
-
-        else:
             newUser = 0
-            
+
+            break
 
     if newUser == 1:
         print(f"On group {chat_id} add a new User : {username}, ID : {userID}")
@@ -166,6 +164,7 @@ def drinkFunction(user, text, update, context):
     with open(path, 'w') as jsonFile:
         json.dump(data, jsonFile, indent=3)
 
+    update.message.reply_text(drinkEmojiDictionary[text])
     update.message.reply_text(drinkDictionary[randint(1,len(drinkDictionary))])
 
 def startFunction(update, context):
@@ -248,13 +247,15 @@ def GetResum(bot):
                 n += 1
                 finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {EmojiDictionary[1]}\n"
 
-            finalText += "\n"
+            if info != []:
+                finalText += "\n"
 
             return finalText
 
         for j in data[str(i)]["users"]:
             for k in range(len(data[str(i)]["users"][str(j)])):
-                info.append(f'{data[str(i)]["users"][str(j)][k]["number"]}-{j}-{data[str(i)]["users"][str(j)][k]["text"]}-{data[str(i)]["users"][str(j)][k]["username"]}')
+                if "number" in data[str(i)]["users"][str(j)][k]:
+                    info.append(f'{data[str(i)]["users"][str(j)][k]["number"]}-{j}-{data[str(i)]["users"][str(j)][k]["text"]}-{data[str(i)]["users"][str(j)][k]["username"]}')
 
         info.sort()
         info.reverse()
@@ -273,9 +274,40 @@ def GetResum(bot):
                 EmojiDictionary = alienEmojiDictionary
                 alien.append(m)
 
+
+        def addDrinkResum(i, drink):
+            m = 0
+            info = []
+            for j in data[str(i)]["users"]:
+                for k in range(len(data[str(i)]["users"][str(j)])):
+                    if data[str(i)]["users"][str(j)][k]["drink"] == 1 and drink in data[str(i)]["users"][str(j)][k]["drinkList"]:
+
+                        info.append(f'{data[str(i)]["users"][str(j)][k]["drinkList"][drink]}-{j}-{drink}-{data[str(i)]["users"][str(j)][k]["username"]}')
+                        m += 1
+            info.sort()
+            info.reverse()
+
+            print(info)
+            n = 0
+            finalText = ""
+
+            for l in info:
+                print(l)
+                n += 1
+                finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {drinkEmojiDictionary[drink]}\n"
+
+            finalText += "\n"
+
+            return finalText
+    
+
         finalText += addResum(brain)
         finalText += addResum(code)
         finalText += addResum(alien)
+
+        finalText += addDrinkResum(i, "coffee")
+        finalText += addDrinkResum(i, "other")
+        finalText += addDrinkResum(i, "beer")        
 
         bot.send_message(chat_id=i, text=finalText)
 
@@ -285,7 +317,13 @@ def GetResum(bot):
     data = {}
 
     with open(path, 'w') as jsonFile:
-        json.dump(data, jsonFile, indent=3)  
+        json.dump(data, jsonFile, indent=3)
+
+def resumFunction2(update, context):
+    user = update.message.from_user
+    if str(user["id"]) == "6026437985":
+        resumFunction(update, context)
+  
 
 def main():
 
@@ -307,7 +345,7 @@ def main():
     dp.add_handler(CommandHandler("brain", brainFunction))
     dp.add_handler(CommandHandler("smart", smartFunction))
 
-    dp.add_handler(CommandHandler("resum", resumFunction))
+    dp.add_handler(CommandHandler("resum", resumFunction2))
 
     dp.add_handler(CommandHandler("code", codeFunction))
     dp.add_handler(CommandHandler("geek", geekFunction))
@@ -318,8 +356,6 @@ def main():
     dp.add_handler(CommandHandler("coffee", coffeeFunction))
     dp.add_handler(CommandHandler("beer", beerFunction))
     dp.add_handler(CommandHandler("drink", drinkSomethingFunction))
-
-    dp.add_handler(CommandHandler("getresume", GetResum))
 
     # Run bot
     updater.start_polling()
@@ -340,7 +376,6 @@ def main():
 
     # Stop bot with CTRL+C
     updater.idle()
-
 
 if __name__ == '__main__':
     main()
