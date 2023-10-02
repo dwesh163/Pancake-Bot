@@ -5,3 +5,4 @@ services:
       - .:/usr/src/app
     environment:
       - TOKEN=${PANCAKE_BOT_TOKEN}
+    restart: unless-stopped
