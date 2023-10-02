@@ -32,3 +32,9 @@ drinkDictionary = {
     2 : "tu devais avoir soif", 
     3 : "Quel bon buveur"
 }
+
+drinkEmojiDictionary = {
+    "coffee" : "☕️",
+    "beer" : "🍺",
+    "other" : "🥛"
+}
