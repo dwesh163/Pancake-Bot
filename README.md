@@ -1,6 +1,5 @@
-# FSD-Bot
-
-FSD-Bot is a fun and interactive Telegram bot that responds to various commands and provides daily rankings based on user interactions. 
+# Pancake-Bot
+Pancake-Bot is a fun and interactive Telegram bot that responds to various commands and provides daily rankings based on user interactions. 
 
 ## General Idea
 
