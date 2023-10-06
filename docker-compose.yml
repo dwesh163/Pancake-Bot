@@ -3,8 +3,4 @@ services:
     build: .
     volumes:
       - .:/usr/src/app
-    environment:
-      - TOKEN=${PANCAKE_BOT_TOKEN}
-      - HEURE=${PANCAKE_BOT_HEURE:-16}
-      - MINUTE=${PANCAKE_BOT_MINUTE:-00}
     restart: unless-stopped
