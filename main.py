@@ -30,9 +30,13 @@ def verifyAccount(user,update):
     with open(path, 'r') as jsonFile:
         data = json.load(jsonFile)
 
+
+
+    data[channel][str("config_time")]
+
     dictionary = {
         "channel_name": "undefined",
-        "config_time": "18:00",
+        "config_time" : f"{HEURE}:{MINUTE}",
         "users": {
         }
     }
@@ -210,17 +214,14 @@ def drinkSomethingFunction(update, context):
     user = update.message.from_user
     drinkFunction(user, "other", update, context)
 
-
 def resumFunction(update, context):
+    GetResum(update.message.chat_id, False)
+ 
+# Resum function
+def GetResum(channel,reset=False):
+
     updater = Updater(TOKEN, use_context=True)
     bot = updater.bot
-    GetResum(bot, False)
-
-# Resum function
-def GetResum(bot,reset=False):
-
-    with open("data.json", 'r') as jsonFile:
-        data = json.load(jsonFile)
 
     def addResum(info):
         n = 0
@@ -244,7 +245,7 @@ def GetResum(bot,reset=False):
             finalText += "\n"
 
         return finalText
-    
+
     def addDrinkResum(channel, drink):
         m = 0
         info = []
@@ -257,7 +258,7 @@ def GetResum(bot,reset=False):
         info.sort()
         info.reverse()
 
-        print(info)
+        # print(info)
         n = 0
         finalText = ""
 
@@ -267,59 +268,59 @@ def GetResum(bot,reset=False):
             finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {drinkEmojiDictionary[drink]}\n"
 
         finalText += "\n"
-
         return finalText
+
         
-    for channel in data:
-        info = []
-        if reset:
 
-            HEURE = os.getenv('HEURE')
-            MINUTE = os.getenv('MINUTE')
+    with open("data.json", 'r') as jsonFile:
+        data = json.load(jsonFile)
 
-            finalText = messageDictionary["reset"].replace("TIME", f"{HEURE}:{MINUTE}")
-        else:
-            finalText = messageDictionary["resum"]
+    
+    info = []
+    if reset:
 
-        brain = []
-        code = []
-        alien = []
+        HEURE = os.getenv('HEURE')
+        MINUTE = os.getenv('MINUTE')
 
-
-        for user in data[str(channel)]["users"]:
-            for k in range(len(data[str(channel)]["users"][str(user)])):
-                if "number" in data[str(channel)]["users"][str(user)][k]:
-                    info.append(f'{data[str(channel)]["users"][str(user)][k]["number"]}-{user}-{data[str(channel)]["users"][str(user)][k]["text"]}-{data[str(channel)]["users"][str(user)][k]["username"]}')
-
-        info.sort()
-        info.reverse()
-
-        for m in info:
-            text = m.split("-")[2]
-            if text == "brain" or text == "smart":
-                brain.append(m)
-                EmojiDictionary = brainEmojiDictionary
-
-            if text == "code" or text == "geek":
-                EmojiDictionary = codeEmojiDictionary
-                code.append(m)
-
-            if text == "ufo" or text == "alien":
-                EmojiDictionary = alienEmojiDictionary
-                alien.append(m)
-
+        finalText = messageDictionary["reset"].replace("TIME", f"{HEURE}:{MINUTE}")
+    else:
+        finalText = messageDictionary["resum"]
 
     
 
-        finalText += addResum(brain)
-        finalText += addResum(code)
-        finalText += addResum(alien)
 
-        finalText += addDrinkResum(channel, "coffee")
-        finalText += addDrinkResum(channel, "other")
-        finalText += addDrinkResum(channel, "beer")        
+    brain = []
+    code = []
+    alien = []
 
-        bot.send_message(chat_id=channel, text=finalText)
+    for user in data[str(channel)]["users"]:
+        for k in range(len(data[str(channel)]["users"][str(user)])):
+            if "number" in data[str(channel)]["users"][str(user)][k]:
+                info.append(f'{data[str(channel)]["users"][str(user)][k]["number"]}-{user}-{data[str(channel)]["users"][str(user)][k]["text"]}-{data[str(channel)]["users"][str(user)][k]["username"]}')
+
+    info.sort()
+    info.reverse()
+
+    for m in info:
+        text = m.split("-")[2]
+        if text == "brain" or text == "smart":
+            brain.append(m)
+
+        if text == "code" or text == "geek":
+            code.append(m)
+
+        if text == "ufo" or text == "alien":
+            alien.append(m)
+
+    finalText += addResum(brain)
+    finalText += addResum(code)
+    finalText += addResum(alien)
+
+    finalText += addDrinkResum(channel, "coffee")
+    finalText += addDrinkResum(channel, "other")
+    finalText += addDrinkResum(channel, "beer")        
+
+    bot.send_message(chat_id=channel, text=finalText)
 
     if reset:
         data[channel]["users"] = {}
@@ -346,14 +347,10 @@ def configFunction(update, context):
 
     update.message.reply_text(f"New summary time is now set to: {str(validtime)}")
 
-
-
+    
 def main():
 
     print("script started")
-
-    HEURE = os.getenv('HEURE')
-    MINUTE = os.getenv('MINUTE')
 
     updater = Updater(TOKEN, use_context=True)
 
@@ -388,15 +385,18 @@ def main():
     while True:
         time = datetime.now().time()
 
-        if time.hour == HEURE and time.minute == MINUTE and isSend != 1:
-            GetResum(bot, True)
-            isSend = 1
-        else:
-            sleep(29)
+        with open("data.json", 'r') as jsonFile:
+            data = json.load(jsonFile)
 
-        if time.hour == HEURE and time.minute == MINUTE + 2:
-            isSend = 0
+        for channel in data:
+            print(time.hour, time.minute)
+            if int(time.hour) == int(data[channel][str("config_time")].split(":")[0]) and int(time.minute) == int(data[channel]["config_time"].split(":")[1]):
+                print(time.hour, time.minute)
+                GetResum(channel, True)
+                
 
+
+        sleep(60)
 
     # Stop bot with CTRL+C
     updater.idle()
