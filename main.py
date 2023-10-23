@@ -30,9 +30,8 @@ def verifyAccount(user,update):
     with open(path, 'r') as jsonFile:
         data = json.load(jsonFile)
 
-
-
-    data[channel][str("config_time")]
+    HEURE = os.getenv("HEURE")
+    MINUTE = os.getenv("MINUTE")
 
     dictionary = {
         "channel_name": "undefined",
@@ -282,7 +281,7 @@ def GetResum(channel,reset=False):
         HEURE = os.getenv('HEURE')
         MINUTE = os.getenv('MINUTE')
 
-        finalText = messageDictionary["reset"].replace("TIME", f"{HEURE}:{MINUTE}")
+        finalText = messageDictionary["reset"].replace("TIME", data[channel][str("config_time")])
     else:
         finalText = messageDictionary["resum"]
 
