@@ -271,7 +271,11 @@ def GetResum(bot):
         
     for i in data:
         info = []
-        finalText = "Il est 18 heures voici le classement: \n\n"
+        
+        HEURE = os.getenv('HEURE')
+        MINUTE = os.getenv('MINUTE')
+
+        finalText = messageDictionary["reset"].replace("TIME", f"{HEURE}:{MINUTE}")
 
         brain = []
         code = []
