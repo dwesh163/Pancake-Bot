@@ -213,10 +213,10 @@ def drinkSomethingFunction(update, context):
 def resumFunction(update, context):
     updater = Updater(TOKEN, use_context=True)
     bot = updater.bot
-    GetResum(bot)
+    GetResum(bot, False)
 
 # Resum function
-def GetResum(bot):
+def GetResum(bot,reset=False):
 
     with open("data.json", 'r') as jsonFile:
         data = json.load(jsonFile)
@@ -271,11 +271,14 @@ def GetResum(bot):
         
     for i in data:
         info = []
-        
-        HEURE = os.getenv('HEURE')
-        MINUTE = os.getenv('MINUTE')
+        if reset:
 
-        finalText = messageDictionary["reset"].replace("TIME", f"{HEURE}:{MINUTE}")
+            HEURE = os.getenv('HEURE')
+            MINUTE = os.getenv('MINUTE')
+
+            finalText = messageDictionary["reset"].replace("TIME", f"{HEURE}:{MINUTE}")
+        else:
+            finalText = messageDictionary["resum"]
 
         brain = []
         code = []
@@ -325,11 +328,6 @@ def GetResum(bot):
     with open(path, 'w') as jsonFile:
         json.dump(data, jsonFile, indent=3)
 
-def resumFunction2(update, context):
-    user = update.message.from_user
-    if str(user["id"]) == "6026437985":
-        resumFunction(update, context)
-  
 
 def main():
 
@@ -351,7 +349,7 @@ def main():
     dp.add_handler(CommandHandler("brain", brainFunction))
     dp.add_handler(CommandHandler("smart", smartFunction))
 
-    dp.add_handler(CommandHandler("resum", resumFunction2))
+    dp.add_handler(CommandHandler("resum", resumFunction))
 
     dp.add_handler(CommandHandler("code", codeFunction))
     dp.add_handler(CommandHandler("geek", geekFunction))
@@ -371,7 +369,7 @@ def main():
         time = datetime.now().time()
 
         if time.hour == HEURE and time.minute == MINUTE and isSend != 1:
-            GetResum(bot)
+            GetResum(bot, True)
             isSend = 1
         else:
             sleep(29)
