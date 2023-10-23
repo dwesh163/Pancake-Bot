@@ -1,11 +1,12 @@
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 import os
 from dotenv import load_dotenv
-from dictionary import messageDictionary, brainEmojiDictionary, codeEmojiDictionary, alienEmojiDictionary, drinkDictionary, drinkEmojiDictionary
+from dictionary import messageDictionary, EmojiDictionary, drinkDictionary, drinkEmojiDictionary
 from random import *
 import json
 from datetime import datetime
 from time import *
+from ManageBotData import ManageBotData
 
 load_dotenv()
 
@@ -13,160 +14,96 @@ TOKEN = os.getenv('TOKEN')
 
 global geek
 geek = 0
-global path
-path = "data.json"
 
-if not os.path.exists(path):
-    with open(path, 'w') as f:
-        json.dump({}, f)
+botData = ManageBotData('data.json')
 
 # verify function
 def verifyAccount(user,update):
 
-    username = user['username']
     userID = user["id"]
-    chat_id = update.message.chat_id
+    chatID = update.message.chat_id
 
-    with open(path, 'r') as jsonFile:
-        data = json.load(jsonFile)
-
-    HEURE = os.getenv("HEURE")
-    MINUTE = os.getenv("MINUTE")
+    data = botData.getData()
 
     dictionary = {
         "channel_name": "undefined",
-        "config_time" : f"{HEURE}:{MINUTE}",
+        "config_time" : f'{os.getenv("HEURE")}:{os.getenv("MINUTE")}',
         "users": {
         }
     }
 
-    if str(chat_id) not in data:
-        data[chat_id] = dictionary
+    if str(chatID) not in data or len(data) == 0:
+        data[str(chatID)] = dictionary
 
-    if len(data) == 0:
-        data[chat_id] = dictionary
+    if str(userID) not in data[str(chatID)]["users"]:
+        data[str(chatID)]["users"][str(userID)] = []
 
-    with open(path, 'w') as jsonFile:
-        json.dump(data, jsonFile, indent=3)
-
-    sleep(0.1)
-
-    with open(path, 'r') as jsonFile:
-        data = json.load(jsonFile)
-
-    dictionary = {
-        userID : [
-
-            ]
-    }
-
-    if str(userID) not in data[str(chat_id)]["users"]:
-        data[str(chat_id)]["users"][userID] = []
-
-    with open(path, 'w') as jsonFile:
-        json.dump(data, jsonFile, indent=3)
+    botData.setData(data)
 
 #send function
-def sendEmoji(user, text, update, context):
+def sendEmoji(text, update, context):
 
-    verifyAccount(user,update)
-
-    newUser = 1
-    
-    if text == "brain" or text == "smart":
-        text1 = "brain"
-        text2 = "smart"
-        EmojiDictionary = brainEmojiDictionary
-        number = randint(1,len(brainEmojiDictionary))
-
-    if text == "code" or text == "geek":
-        text1 = "code"
-        text2 = "geek"
-        EmojiDictionary = codeEmojiDictionary
-        number = randint(1,len(codeEmojiDictionary))
-
-    if text == "ufo" or text == "alien":
-        text1 = "ufo"
-        text2 = "alien"
-        EmojiDictionary = alienEmojiDictionary
-        number = randint(1,len(alienEmojiDictionary))
+    user = update.message.from_user
+    data = botData.getData()
+    number = randint(1,len(EmojiDictionary[text]))
 
     username = user['username']
     userID = user["id"]
-    chat_id = update.message.chat_id
+    chatID = update.message.chat_id
 
-    with open(path, 'r') as jsonFile:
-        data = json.load(jsonFile)
+    verifyAccount(user, update)
 
-    for i in range(len(data[str(chat_id)]["users"][str(userID)])):
-        if data[str(chat_id)]["users"][str(userID)][i]["text"] == text1 or data[str(chat_id)]["users"][str(userID)][i]["text"] == text2:
-            update.message.reply_text("Une seule commande par utilisateur est autorisée par jour")
-            newUser = 0
+    if botData.isNewUser(update, text):
+        update.message.reply_text("Une seule commande par utilisateur est autorisée par jour")
 
-    if newUser == 1:
-        print(f"On group {chat_id} add a new User : {username}, ID : {userID}")
+    else:
+        print(f"On group {chatID} add a new User : {username}, ID : {userID}")
+
         dictionary = {
             "username": username,
             "drink" : 0,
             "text": text,
             "number": number,
-            "time": datetime.now().strftime("%H:%M:%S"),
-            "date": datetime.now().strftime("%m/%d/%y"),
+            "time": datetime.now().strftime("%H:%M:%S")
             }
 
-        data[str(chat_id)]["users"][str(userID)].append(dictionary)
+        data[str(chatID)]["users"][str(userID)].append(dictionary)
 
-        with open(path, 'w') as jsonFile:
-            json.dump(data, jsonFile, indent=3)
+        update.message.reply_text(EmojiDictionary[text][number])
 
-        update.message.reply_text(EmojiDictionary[number])
-        Isgeek = 0
+    botData.setData(data)
 
-def drinkFunction(user, text, update, context):
+def drinkFunction(text, update, context):
+
+    user = update.message.from_user
+    username = user['username']
+    userID = user["id"]
+    chatID = update.message.chat_id
 
     verifyAccount(user,update)
 
     newUser = 1
 
-    username = user['username']
-    userID = user["id"]
-    chat_id = update.message.chat_id
+    data = botData.getData()
 
-    with open(path, 'r') as jsonFile:
-        data = json.load(jsonFile)
-
-    for i in range(len(data[str(chat_id)]["users"][str(userID)])):
-        if data[str(chat_id)]["users"][str(userID)][i]["drink"] == 1:
-            newUser = 2
-            
-            if text in data[str(chat_id)]["users"][str(userID)][i]["drinkList"]:
-                nb = data[str(chat_id)]["users"][str(userID)][i]["drinkList"][text]
-                nb += 1
-                data[str(chat_id)]["users"][str(userID)][i]["drinkList"][text] = nb
-            else:
-                data[str(chat_id)]["users"][str(userID)][i]["drinkList"][text] = 1
-
-            newUser = 0
-
-            break
-
-    if newUser == 1:
-        print(f"On group {chat_id} add a new User : {username}, ID : {userID}")
+    if botData.isNewDrinkUser(update):
+        print(f"On group {chatID} add a new User : {username}, ID : {userID}")
         dictionary = {
             "username": username,
-            "text":"",
+            "text": "undefined",
             "drink": 1,
             "time": datetime.now().strftime("%H:%M:%S"),
-            "date": datetime.now().strftime("%m/%d/%y"),
             "drinkList": {
                 text: 1
             }
-            }
+        }
 
-        data[str(chat_id)]["users"][str(userID)].append(dictionary)
+        data[str(chatID)]["users"][str(userID)].append(dictionary)
+    
+    else:
+        botData.addDrink(text, update)
         
-    with open(path, 'w') as jsonFile:
-        json.dump(data, jsonFile, indent=3)
+    botData.setData(data)
 
     update.message.reply_text(drinkEmojiDictionary[text])
     update.message.reply_text(drinkDictionary[randint(1,len(drinkDictionary))])
@@ -178,46 +115,29 @@ def helpFunction(update, context):
     update.message.reply_text(messageDictionary["help"])
 
 def brainFunction(update, context):
-    user = update.message.from_user
-    sendEmoji(user, "brain", update, context)
-
-def smartFunction(update, context):
-    user = update.message.from_user
-    sendEmoji(user, "smart", update, context)
+    sendEmoji("brain", update, context)
 
 def codeFunction(update, context):
-    user = update.message.from_user
-    sendEmoji(user, "code", update, context)
-
-def geekFunction(update, context):
-    user = update.message.from_user
-    sendEmoji(user, "geek", update, context)
-
-def ufoFunction(update, context):
-    user = update.message.from_user
-    sendEmoji(user, "ufo", update, context)
+    sendEmoji("code", update, context)
 
 def alienFunction(update, context):
-    user = update.message.from_user
-    sendEmoji(user, "alien", update, context)
+    sendEmoji("alien", update, context)
+
 
 def coffeeFunction(update, context):
-    user = update.message.from_user
-    drinkFunction(user, "coffee", update, context)
+    drinkFunction("coffee", update, context)
 
 def beerFunction(update, context):
-    user = update.message.from_user
-    drinkFunction(user, "beer", update, context)
+    drinkFunction("beer", update, context)
 
 def drinkSomethingFunction(update, context):
-    user = update.message.from_user
-    drinkFunction(user, "other", update, context)
+    drinkFunction("other", update, context)
 
 def resumFunction(update, context):
     GetResum(update.message.chat_id, False)
  
 # Resum function
-def GetResum(channel,reset=False):
+def GetResum(channel, reset=False):
 
     updater = Updater(TOKEN, use_context=True)
     bot = updater.bot
@@ -228,17 +148,9 @@ def GetResum(channel,reset=False):
 
         for l in info:
             text = l.split("-")[2]
-            if text == "brain" or text == "smart":
-                EmojiDictionary = brainEmojiDictionary
-
-            if text == "code" or text == "geek":
-                EmojiDictionary = codeEmojiDictionary
-
-            if text == "ufo" or text == "alien":
-                EmojiDictionary = alienEmojiDictionary
-
             n += 1
-            finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {EmojiDictionary[1]}\n"
+
+            finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {EmojiDictionary[text][1]}\n"
 
         if info != []:
             finalText += "\n"
@@ -248,12 +160,13 @@ def GetResum(channel,reset=False):
     def addDrinkResum(channel, drink):
         m = 0
         info = []
+
         for user in data[str(channel)]["users"]:
             for k in range(len(data[str(channel)]["users"][str(user)])):
                 if data[str(channel)]["users"][str(user)][k]["drink"] == 1 and drink in data[str(channel)]["users"][str(user)][k]["drinkList"]:
-
                     info.append(f'{data[str(channel)]["users"][str(user)][k]["drinkList"][drink]}-{user}-{drink}-{data[str(channel)]["users"][str(user)][k]["username"]}')
                     m += 1
+
         info.sort()
         info.reverse()
 
@@ -262,30 +175,20 @@ def GetResum(channel,reset=False):
         finalText = ""
 
         for l in info:
-            print(l)
             n += 1
             finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {drinkEmojiDictionary[drink]}\n"
 
         finalText += "\n"
         return finalText
 
-        
 
-    with open("data.json", 'r') as jsonFile:
-        data = json.load(jsonFile)
-
-    
+    data = botData.getData()
     info = []
+
     if reset:
-
-        HEURE = os.getenv('HEURE')
-        MINUTE = os.getenv('MINUTE')
-
         finalText = messageDictionary["reset"].replace("TIME", data[channel][str("config_time")])
     else:
-        finalText = messageDictionary["resum"]
-
-    
+        finalText = messageDictionary["resum"]   
 
 
     brain = []
@@ -302,13 +205,13 @@ def GetResum(channel,reset=False):
 
     for m in info:
         text = m.split("-")[2]
-        if text == "brain" or text == "smart":
+        if text == "brain":
             brain.append(m)
 
-        if text == "code" or text == "geek":
+        if text == "code":
             code.append(m)
 
-        if text == "ufo" or text == "alien":
+        if text == "ufo":
             alien.append(m)
 
     finalText += addResum(brain)
@@ -323,13 +226,11 @@ def GetResum(channel,reset=False):
 
     if reset:
         data[channel]["users"] = {}
-        with open(path, 'w') as jsonFile:
-            json.dump(data, jsonFile, indent=3)
+        botData.setData(data)
 
 def configFunction(update, context):
 
-    with open("data.json", 'r') as jsonFile:
-        data = json.load(jsonFile)
+    data = botData.getData()
 
     chat = update.message.chat_id
 
@@ -341,8 +242,8 @@ def configFunction(update, context):
         update.message.reply_text(f"Time is not valid. Please use %H:%M format.")
     
     data[str(chat)]["config_time"] = str(validtime)
-    with open(path, 'w') as jsonFile:
-            json.dump(data, jsonFile, indent=3)
+
+    botData.setData(data)
 
     update.message.reply_text(f"New summary time is now set to: {str(validtime)}")
 
@@ -360,18 +261,18 @@ def main():
     dp.add_handler(CommandHandler("start", startFunction))
     dp.add_handler(CommandHandler("help", helpFunction))
 
-    # Print Command
-    dp.add_handler(CommandHandler("brain", brainFunction))
-    dp.add_handler(CommandHandler("smart", smartFunction))
-
     dp.add_handler(CommandHandler("resum", resumFunction))
     dp.add_handler(CommandHandler("config", configFunction))
 
+    # Print Command
+    dp.add_handler(CommandHandler("brain", brainFunction))
+    dp.add_handler(CommandHandler("smart", brainFunction))
+
     dp.add_handler(CommandHandler("code", codeFunction))
-    dp.add_handler(CommandHandler("geek", geekFunction))
+    dp.add_handler(CommandHandler("geek", codeFunction))
 
     dp.add_handler(CommandHandler("alien", alienFunction))
-    dp.add_handler(CommandHandler("ufo", ufoFunction))
+    dp.add_handler(CommandHandler("ufo", alienFunction))
 
     dp.add_handler(CommandHandler("coffee", coffeeFunction))
     dp.add_handler(CommandHandler("beer", beerFunction))
@@ -388,13 +289,10 @@ def main():
             data = json.load(jsonFile)
 
         for channel in data:
-            print(time.hour, time.minute)
             if int(time.hour) == int(data[channel][str("config_time")].split(":")[0]) and int(time.minute) == int(data[channel]["config_time"].split(":")[1]):
                 print(time.hour, time.minute)
                 GetResum(channel, True)
                 
-
-
         sleep(60)
 
     # Stop bot with CTRL+C
