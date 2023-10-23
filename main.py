@@ -320,13 +320,10 @@ def GetResum(bot,reset=False):
 
         bot.send_message(chat_id=channel, text=finalText)
 
-    with open("data.json", 'r') as jsonFile:
-        data = json.load(jsonFile)
-
-    data = {}
-
-    with open(path, 'w') as jsonFile:
-        json.dump(data, jsonFile, indent=3)
+    if reset:
+        data[channel]["users"] = {}
+        with open(path, 'w') as jsonFile:
+            json.dump(data, jsonFile, indent=3)
 
 
 def main():
