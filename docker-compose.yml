@@ -1,5 +1,5 @@
 services:
-  fsdbot:
+  pancakebot:
     build: .
     volumes:
       - .:/usr/src/app
