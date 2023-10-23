@@ -221,6 +221,54 @@ def GetResum(bot):
     with open("data.json", 'r') as jsonFile:
         data = json.load(jsonFile)
 
+    def addResum(info):
+        n = 0
+        finalText = ""
+
+        for l in info:
+            text = l.split("-")[2]
+            if text == "brain" or text == "smart":
+                EmojiDictionary = brainEmojiDictionary
+
+            if text == "code" or text == "geek":
+                EmojiDictionary = codeEmojiDictionary
+
+            if text == "ufo" or text == "alien":
+                EmojiDictionary = alienEmojiDictionary
+
+            n += 1
+            finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {EmojiDictionary[1]}\n"
+
+        if info != []:
+            finalText += "\n"
+
+        return finalText
+    
+    def addDrinkResum(i, drink):
+        m = 0
+        info = []
+        for j in data[str(i)]["users"]:
+            for k in range(len(data[str(i)]["users"][str(j)])):
+                if data[str(i)]["users"][str(j)][k]["drink"] == 1 and drink in data[str(i)]["users"][str(j)][k]["drinkList"]:
+
+                    info.append(f'{data[str(i)]["users"][str(j)][k]["drinkList"][drink]}-{j}-{drink}-{data[str(i)]["users"][str(j)][k]["username"]}')
+                    m += 1
+        info.sort()
+        info.reverse()
+
+        print(info)
+        n = 0
+        finalText = ""
+
+        for l in info:
+            print(l)
+            n += 1
+            finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {drinkEmojiDictionary[drink]}\n"
+
+        finalText += "\n"
+
+        return finalText
+        
     for i in data:
         info = []
         finalText = "Il est 18 heures voici le classement: \n\n"
@@ -229,28 +277,6 @@ def GetResum(bot):
         code = []
         alien = []
 
-        def addResum(info):
-            n = 0
-            finalText = ""
-
-            for l in info:
-                text = l.split("-")[2]
-                if text == "brain" or text == "smart":
-                    EmojiDictionary = brainEmojiDictionary
-
-                if text == "code" or text == "geek":
-                    EmojiDictionary = codeEmojiDictionary
-
-                if text == "ufo" or text == "alien":
-                    EmojiDictionary = alienEmojiDictionary
-
-                n += 1
-                finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {EmojiDictionary[1]}\n"
-
-            if info != []:
-                finalText += "\n"
-
-            return finalText
 
         for j in data[str(i)]["users"]:
             for k in range(len(data[str(i)]["users"][str(j)])):
@@ -275,30 +301,6 @@ def GetResum(bot):
                 alien.append(m)
 
 
-        def addDrinkResum(i, drink):
-            m = 0
-            info = []
-            for j in data[str(i)]["users"]:
-                for k in range(len(data[str(i)]["users"][str(j)])):
-                    if data[str(i)]["users"][str(j)][k]["drink"] == 1 and drink in data[str(i)]["users"][str(j)][k]["drinkList"]:
-
-                        info.append(f'{data[str(i)]["users"][str(j)][k]["drinkList"][drink]}-{j}-{drink}-{data[str(i)]["users"][str(j)][k]["username"]}')
-                        m += 1
-            info.sort()
-            info.reverse()
-
-            print(info)
-            n = 0
-            finalText = ""
-
-            for l in info:
-                print(l)
-                n += 1
-                finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {drinkEmojiDictionary[drink]}\n"
-
-            finalText += "\n"
-
-            return finalText
     
 
         finalText += addResum(brain)
