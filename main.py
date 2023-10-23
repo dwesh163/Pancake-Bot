@@ -244,14 +244,14 @@ def GetResum(bot,reset=False):
 
         return finalText
     
-    def addDrinkResum(i, drink):
+    def addDrinkResum(channel, drink):
         m = 0
         info = []
-        for j in data[str(i)]["users"]:
-            for k in range(len(data[str(i)]["users"][str(j)])):
-                if data[str(i)]["users"][str(j)][k]["drink"] == 1 and drink in data[str(i)]["users"][str(j)][k]["drinkList"]:
+        for user in data[str(channel)]["users"]:
+            for k in range(len(data[str(channel)]["users"][str(user)])):
+                if data[str(channel)]["users"][str(user)][k]["drink"] == 1 and drink in data[str(channel)]["users"][str(user)][k]["drinkList"]:
 
-                    info.append(f'{data[str(i)]["users"][str(j)][k]["drinkList"][drink]}-{j}-{drink}-{data[str(i)]["users"][str(j)][k]["username"]}')
+                    info.append(f'{data[str(channel)]["users"][str(user)][k]["drinkList"][drink]}-{user}-{drink}-{data[str(channel)]["users"][str(user)][k]["username"]}')
                     m += 1
         info.sort()
         info.reverse()
@@ -269,7 +269,7 @@ def GetResum(bot,reset=False):
 
         return finalText
         
-    for i in data:
+    for channel in data:
         info = []
         if reset:
 
@@ -285,10 +285,10 @@ def GetResum(bot,reset=False):
         alien = []
 
 
-        for j in data[str(i)]["users"]:
-            for k in range(len(data[str(i)]["users"][str(j)])):
-                if "number" in data[str(i)]["users"][str(j)][k]:
-                    info.append(f'{data[str(i)]["users"][str(j)][k]["number"]}-{j}-{data[str(i)]["users"][str(j)][k]["text"]}-{data[str(i)]["users"][str(j)][k]["username"]}')
+        for user in data[str(channel)]["users"]:
+            for k in range(len(data[str(channel)]["users"][str(user)])):
+                if "number" in data[str(channel)]["users"][str(user)][k]:
+                    info.append(f'{data[str(channel)]["users"][str(user)][k]["number"]}-{user}-{data[str(channel)]["users"][str(user)][k]["text"]}-{data[str(channel)]["users"][str(user)][k]["username"]}')
 
         info.sort()
         info.reverse()
@@ -314,11 +314,11 @@ def GetResum(bot,reset=False):
         finalText += addResum(code)
         finalText += addResum(alien)
 
-        finalText += addDrinkResum(i, "coffee")
-        finalText += addDrinkResum(i, "other")
-        finalText += addDrinkResum(i, "beer")        
+        finalText += addDrinkResum(channel, "coffee")
+        finalText += addDrinkResum(channel, "other")
+        finalText += addDrinkResum(channel, "beer")        
 
-        bot.send_message(chat_id=i, text=finalText)
+        bot.send_message(chat_id=channel, text=finalText)
 
     with open("data.json", 'r') as jsonFile:
         data = json.load(jsonFile)
