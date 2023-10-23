@@ -32,6 +32,7 @@ def verifyAccount(user,update):
 
     dictionary = {
         "channel_name": "undefined",
+        "config_time": "18:00",
         "users": {
         }
     }
@@ -325,6 +326,27 @@ def GetResum(bot,reset=False):
         with open(path, 'w') as jsonFile:
             json.dump(data, jsonFile, indent=3)
 
+def configFunction(update, context):
+
+    with open("data.json", 'r') as jsonFile:
+        data = json.load(jsonFile)
+
+    chat = update.message.chat_id
+
+    newTime = update.message.text.replace("/config ","")
+    timeformat = "%H:%M"
+    try:
+        validtime = datetime.strptime(newTime, timeformat).strftime(timeformat)
+    except ValueError:
+        update.message.reply_text(f"Time is not valid. Please use %H:%M format.")
+    
+    data[str(chat)]["config_time"] = str(validtime)
+    with open(path, 'w') as jsonFile:
+            json.dump(data, jsonFile, indent=3)
+
+    update.message.reply_text(f"New summary time is now set to: {str(validtime)}")
+
+
 
 def main():
 
@@ -347,6 +369,7 @@ def main():
     dp.add_handler(CommandHandler("smart", smartFunction))
 
     dp.add_handler(CommandHandler("resum", resumFunction))
+    dp.add_handler(CommandHandler("config", configFunction))
 
     dp.add_handler(CommandHandler("code", codeFunction))
     dp.add_handler(CommandHandler("geek", geekFunction))
