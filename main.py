@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from dictionary import messageDictionary, EmojiDictionary, drinkDictionary, drinkEmojiDictionary
 from random import *
 import json
-from datetime import datetime
+from datetime import *
 from time import *
 from ManageBotData import ManageBotData
 
@@ -231,6 +231,7 @@ def GetResum(channel, reset=False):
 def configFunction(update, context):
 
     data = botData.getData()
+    TIME = os.getenv("TIME")
 
     chat = update.message.chat_id
 
@@ -240,14 +241,16 @@ def configFunction(update, context):
         validtime = datetime.strptime(newTime, timeformat).strftime(timeformat)
     except ValueError:
         update.message.reply_text(f"Time is not valid. Please use %H:%M format.")
-    
-    data[str(chat)]["config_time"] = str(validtime)
+
+    finalTime = datetime(2023, 10, 25, int(validtime.split(":")[0]), int(validtime.split(":")[1])) + timedelta(hours=int(TIME))
+ 
+    data[str(chat)]["config_time"] = str(finalTime.strftime(timeformat))
 
     botData.setData(data)
 
     update.message.reply_text(f"New summary time is now set to: {str(validtime)}")
 
-    
+
 def main():
 
     print("script started")
