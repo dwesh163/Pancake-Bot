@@ -211,7 +211,7 @@ def GetResum(channel, reset=False):
         if text == "code":
             code.append(m)
 
-        if text == "ufo":
+        if text == "alien":
             alien.append(m)
 
     finalText += addResum(brain)
