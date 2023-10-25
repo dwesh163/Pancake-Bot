@@ -12,8 +12,8 @@ load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
 
-global geek
-geek = 0
+global timeformat
+timeformat = "%H:%M"
 
 botData = ManageBotData('data.json')
 
@@ -185,8 +185,10 @@ def GetResum(channel, reset=False):
     data = botData.getData()
     info = []
 
+    time = datetime(2023, 10, 25, int(data[channel][str("config_time")].split(":")[0]), int(data[channel][str("config_time")].split(":")[1])) - timedelta(hours=int(os.getenv("TIME")))
+
     if reset:
-        finalText = messageDictionary["reset"].replace("TIME", data[channel][str("config_time")])
+        finalText = messageDictionary["reset"].replace("TIME", str(time.strftime(timeformat)))
     else:
         finalText = messageDictionary["resum"]   
 
@@ -236,7 +238,7 @@ def configFunction(update, context):
     chat = update.message.chat_id
 
     newTime = update.message.text.replace("/config ","")
-    timeformat = "%H:%M"
+
     try:
         validtime = datetime.strptime(newTime, timeformat).strftime(timeformat)
     except ValueError:
@@ -293,7 +295,6 @@ def main():
 
         for channel in data:
             if int(time.hour) == int(data[channel][str("config_time")].split(":")[0]) and int(time.minute) == int(data[channel]["config_time"].split(":")[1]):
-                print(time.hour, time.minute)
                 GetResum(channel, True)
                 
         sleep(60)
