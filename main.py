@@ -99,11 +99,11 @@ def drinkFunction(text, update, context):
         }
 
         data[str(chatID)]["users"][str(userID)].append(dictionary)
+        botData.setData(data)
     
     else:
         botData.addDrink(text, update)
         
-    botData.setData(data)
 
     update.message.reply_text(drinkEmojiDictionary[text])
     update.message.reply_text(drinkDictionary[randint(1,len(drinkDictionary))])
