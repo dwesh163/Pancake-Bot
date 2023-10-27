@@ -50,5 +50,6 @@ drinkDictionary = {
 drinkEmojiDictionary = {
     "coffee" : "☕️",
     "beer" : "🍺",
+    "whisky" : "🥃",
     "other" : "🥛"
 }

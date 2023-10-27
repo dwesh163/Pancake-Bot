@@ -136,6 +136,9 @@ def coffeeFunction(update, context):
 def beerFunction(update, context):
     drinkFunction("beer", update, context)
 
+def whiskyFunction(update, context):
+    drinkFunction("whisky", update, context)
+
 def drinkSomethingFunction(update, context):
     drinkFunction("other", update, context)
 
@@ -229,6 +232,7 @@ def GetResum(channel, reset=False):
     finalText += addDrinkResum(channel, "coffee")
     finalText += addDrinkResum(channel, "other")
     finalText += addDrinkResum(channel, "beer")        
+    finalText += addDrinkResum(channel, "whisky")
 
     bot.send_message(chat_id=channel, text=finalText)
 
@@ -287,6 +291,7 @@ def main():
 
     dp.add_handler(CommandHandler("coffee", coffeeFunction))
     dp.add_handler(CommandHandler("beer", beerFunction))
+    dp.add_handler(CommandHandler("whisky", whiskyFunction))
     dp.add_handler(CommandHandler("drink", drinkSomethingFunction))
 
     # Run bot
