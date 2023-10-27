@@ -188,7 +188,7 @@ def GetResum(channel, reset=False):
     data = botData.getData()
     info = []
 
-    time = datetime(2023, 10, 25, int(data[channel][str("config_time")].split(":")[0]), int(data[channel][str("config_time")].split(":")[1])) - timedelta(hours=int(os.getenv("TIME")))
+    time = datetime(2000, 1, 1, int(data[str(channel)][str("config_time")].split(":")[0]), int(data[str(channel)][str("config_time")].split(":")[1])) - timedelta(hours=int(os.getenv("TIME")))
 
     if reset:
         finalText = messageDictionary["reset"].replace("TIME", str(time.strftime(timeformat)))
