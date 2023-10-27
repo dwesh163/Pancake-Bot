@@ -69,7 +69,9 @@ def sendEmoji(text, update, context):
 
         data[str(chatID)]["users"][str(userID)].append(dictionary)
 
-        update.message.reply_text(EmojiDictionary[text][number])
+        update.message.reply_text(EmojiDictionary[text][number],{
+    'disable_notification': True
+})
 
     botData.setData(data)
 
@@ -105,8 +107,12 @@ def drinkFunction(text, update, context):
         botData.addDrink(text, update)
         
 
-    update.message.reply_text(drinkEmojiDictionary[text])
-    update.message.reply_text(drinkDictionary[randint(1,len(drinkDictionary))])
+    update.message.reply_text(drinkEmojiDictionary[text], {
+    'disable_notification': True
+})
+    update.message.reply_text(drinkDictionary[randint(1,len(drinkDictionary))], {
+    'disable_notification': True
+})
 
 def startFunction(update, context):
     update.message.reply_text(messageDictionary["start"])
