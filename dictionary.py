@@ -30,9 +30,21 @@ messageDictionary = {
 }
 
 drinkDictionary = {
-    1 : "Quel gourmand",
-    2 : "tu devais avoir soif", 
-    3 : "Quel bon buveur"
+    1 : "Prost !",         # German
+    2 : "Cheers!",         # English
+    3 : "Saha!",           # Syrian
+    4 : "Topa!",           # Basque
+    5 : "Gom bui!",        # Cantonese
+    6 : "Santé !",         # French
+    7 : "Salud!",          # Spanish
+    8 : "Kippis!",         # Finnish
+    9 : "Kasugta!",        # Greenlandic
+   10 : "Salute!",         # Italian
+   11 : "Kampaï!",         # Japanese
+   12 : "Mogba!",          # Nigerian
+   13 : "Tchin ! tchin !", # Quebecois
+   14 : "Skol!",           # Swedish
+   15 : "Mazel tov!",      # Yiddish
 }
 
 drinkEmojiDictionary = {
