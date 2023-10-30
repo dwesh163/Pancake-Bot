@@ -181,7 +181,9 @@ def GetResum(channel, reset=False):
             n += 1
             finalText = f"{finalText}   {n}. @{l.split('-')[3]} avec {l.split('-')[0]} {drinkEmojiDictionary[drink]}\n"
 
-        finalText += "\n"
+        if info != []:
+            finalText += "\n"
+            
         return finalText
 
 
